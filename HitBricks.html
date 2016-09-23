@@ -18,7 +18,6 @@
     var ball;
     var a = 0;
     var key;
-    var ballOnbat = true;
     var bricks;
     var cursor;
     var starfield;
@@ -30,8 +29,7 @@
     var explosion;
     var biu;
     var hitNumber = 0;
-    var button;
-    var button2;
+
     function preload() {
         game.load.image('bat', 'assets/bat.png');
         game.load.image('back', 'assets/back.png');
@@ -79,26 +77,16 @@
     function render() {
     }
 
-    function startGame() {
-        releaseBall();
-        //button.kill();
-    }
+
     function releaseBall() {
-
-        if (ballOnbat) {
-            ballOnbat = false;
-            ball.body.velocity.y = 400;
-            ball.body.velocity.x = 400;
-        }
-
+        ball.body.velocity.y = 400;
+        ball.body.velocity.x = 400;
     }
 
     function ballHitBrick(ball, brick) {
         explosion = game.add.sprite(brick.body.x - 44, brick.body.y - 54, 'explode');
         explosion.animations.add('explode', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], 25, false);
         explosion.animations.play('explode');
-
-        //console.log(a);
         brick.kill();
         biu.play();
         score += 100;
@@ -106,18 +94,16 @@
     }
 
     function ballHitBat(ball, bat) {
-        ////ball.body.velocity.x-=bat.body.velocity.x*0.4;
+        ball.body.velocity.x -= bat.body.velocity.x * 0.4;//
         ball.body.velocity.x -= 20;
         hitNumber++;
     }
 
     function dead() {
         ball.body.velocity.x = 0;
-
         ball.body.velocity.y = 0;
         ball.kill();
         scoreText2.text = "GAME OVER!!!!!";
-        game.input.onTap.addOnce(game.state.restart, this);
     }
 
     function win() {
@@ -128,7 +114,6 @@
     function init() {
         starfield = game.add.tileSprite(0, 0, 800, 800, 'starfield');
         game.physics.startSystem(Phaser.Physics.ARCADE);
-        //game.add.sprite(0, 0, 'back');
         player = game.add.sprite(300, 775, 'bat');
         player.enableBody = true;
         game.physics.arcade.enable(player);
@@ -137,10 +122,8 @@
         bricks = game.add.group();
         bricks.enableBody = true;
         bricks.physicsBodyType = Phaser.Physics.ARCADE;
-        biu = game.add.audio('biu');
-
+        biu = game.add.audio('biu');//explosion sound
         ball = game.add.sprite(385, 745, 'ball');
-
         ball.checkWorldBounds = true;
         createEnemy();
         game.physics.enable(ball, Phaser.Physics.ARCADE);
@@ -150,14 +133,8 @@
         cursor = game.input.keyboard.createCursorKeys();
         scoreText = game.add.text(0, 0, "Score:" + score, {fontSize: '32px', fill: '#fff'});
         scoreText2 = game.add.text(150, 350, "", {fontSize: '40px', fill: '#fff'});
-        button = game.add.button(300, 350, 'button', start, this);
     }
-    function restart() {
-        bricks.removeAll();
-        player.revive();
-        scoreText2.visible = false;
-        createEnemy();
-    }
+
     function createEnemy() {
         var brick;
         for (var y = 1; y < row + 1; y++) {
@@ -165,8 +142,7 @@
                 if (y % 2 == 0) {
                     brick = bricks.create(80 * x + 70, y * 70, 'redbrick');
                     brick.body.bounce.set(1);
-                    //brick.body.immovable = true;
-                    brick.body.velocity.x=20;
+                    brick.body.immovable = true;
 
                 } else {
                     brick = bricks.create(80 * x + 70, y * 70, 'greenbrick');
