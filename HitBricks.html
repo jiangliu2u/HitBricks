@@ -1,0 +1,184 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>打砖块啊啊啊</title>
+    <script src="js/phaser.js"></script>
+</head>
+<body>
+<div id="container" style="padding-left: 500px"></div>
+<script>
+    var game = new Phaser.Game(800, 800, Phaser.AUTO, 'container', {
+        preload: preload,
+        create: create,
+        update: update,
+        render: render
+    });
+    var player;
+    var ball;
+    var a = 0;
+    var key;
+    var ballOnbat = true;
+    var bricks;
+    var cursor;
+    var starfield;
+    var score = 0;
+    var scoreText;
+    var scoreText2;
+    var line = 9;
+    var row = 4;
+    var explosion;
+    var biu;
+    var hitNumber = 0;
+    var button;
+    var button2;
+    function preload() {
+        game.load.image('bat', 'assets/bat.png');
+        game.load.image('back', 'assets/back.png');
+        game.load.image('ball', 'assets/ball.png');
+        game.load.image('redbrick', 'assets/redbrick.png');
+        game.load.audio('biu', 'assets/biu.wav');
+        game.load.image('starfield', 'assets/starfield.png');
+        game.load.image('greenbrick', 'assets/greenbrick.png');
+        game.load.spritesheet('explode', 'assets/plane/explode.png', 128, 128);
+        game.load.spritesheet('button', 'assets/button.png', 250, 100);
+
+    }
+    function create() {
+        init();
+
+    }
+    function update() {
+        starfield.tilePosition.y += 2;
+        player.body.velocity.x = 0;
+
+        if (key.isDown) {
+            releaseBall();
+        }
+
+        if (ball.body.velocity.x != 0) {
+            if (cursor.left.isDown) {
+                player.body.velocity.x = -800;
+            }
+            if (cursor.right.isDown) {
+                player.body.velocity.x = 800;
+            }
+        }
+        if (ball.body.y + 30 == game.height) {
+            dead();
+        }
+
+        if (bricks.countDead() == (row * line)) {
+            win();
+        }
+        game.physics.arcade.collide(ball, player, ballHitBat, null, this);
+
+        game.physics.arcade.collide(ball, bricks, ballHitBrick, null, this);
+    }
+
+    function render() {
+    }
+
+    function startGame() {
+        releaseBall();
+        button.kill();
+    }
+    function releaseBall() {
+
+        if (ballOnbat) {
+            ballOnbat = false;
+            ball.body.velocity.y = 400;
+            ball.body.velocity.x = 400;
+        }
+
+    }
+
+    function ballHitBrick(ball, brick) {
+        explosion = game.add.sprite(brick.body.x - 44, brick.body.y - 54, 'explode');
+        explosion.animations.add('explode', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], 25, false);
+        explosion.animations.play('explode');
+
+        //console.log(a);
+        brick.kill();
+        biu.play();
+        score += 100;
+        scoreText.text = "Score:" + score;
+    }
+
+    function ballHitBat(ball, bat) {
+        ////ball.body.velocity.x-=bat.body.velocity.x*0.4;
+        ball.body.velocity.x -= 20;
+        hitNumber++;
+    }
+
+    function dead() {
+        ball.body.velocity.x = 0;
+
+        ball.body.velocity.y = 0;
+        ball.kill();
+        scoreText2.text = "GAME OVER!!!!!";
+        game.input.onTap.addOnce(game.state.restart, this);
+    }
+
+    function win() {
+        ball.kill();
+        player.kill();
+        scoreText2.text = "YOU WIN! 击打次数为： " + hitNumber + "次";
+    }
+    function init() {
+        starfield = game.add.tileSprite(0, 0, 800, 800, 'starfield');
+        game.physics.startSystem(Phaser.Physics.ARCADE);
+        //game.add.sprite(0, 0, 'back');
+        player = game.add.sprite(300, 775, 'bat');
+        player.enableBody = true;
+        game.physics.arcade.enable(player);
+        player.body.bounce.set(0);
+        player.body.immovable = true;
+        bricks = game.add.group();
+        bricks.enableBody = true;
+        bricks.physicsBodyType = Phaser.Physics.ARCADE;
+        biu = game.add.audio('biu');
+
+        ball = game.add.sprite(385, 745, 'ball');
+
+        ball.checkWorldBounds = true;
+        createEnemy();
+        game.physics.enable(ball, Phaser.Physics.ARCADE);
+        ball.body.collideWorldBounds = true;
+        ball.body.bounce.set(1);
+        key = game.input.keyboard.addKey(Phaser.KeyCode.A);
+        cursor = game.input.keyboard.createCursorKeys();
+        scoreText = game.add.text(0, 0, "Score:" + score, {fontSize: '32px', fill: '#fff'});
+        scoreText2 = game.add.text(150, 350, "", {fontSize: '40px', fill: '#fff'});
+        button = game.add.button(300, 350, 'button', start, this);
+    }
+    function restart() {
+        bricks.removeAll();
+        player.revive();
+        scoreText2.visible = false;
+        createEnemy();
+    }
+    function createEnemy() {
+        var brick;
+        for (var y = 1; y < row + 1; y++) {
+            for (var x = 0; x < line; x++) {
+                if (y % 2 == 0) {
+                    brick = bricks.create(80 * x + 70, y * 70, 'redbrick');
+                    brick.body.bounce.set(1);
+                    //brick.body.immovable = true;
+                    brick.body.velocity.x=20;
+
+                } else {
+                    brick = bricks.create(80 * x + 70, y * 70, 'greenbrick');
+                    brick.body.bounce.set(1);
+                    brick.body.immovable = true;
+
+                }
+            }
+        }
+    }
+
+</script>
+</body>
+
+</html>
